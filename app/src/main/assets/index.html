@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل السيارة الداخلي</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; }
+        body { background-color: #12181f; color: #ffffff; margin: 0; padding: 15px; user-select: none; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 2px solid #2a3441; margin-bottom: 15px; }
+        .header h2 { margin: 0; font-size: 22px; color: #4fc3f7; }
+        
+        .nav-btn { background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 18px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .main-card { background: linear-gradient(145deg, #1e293b, #0f172a); border: 2px solid #334155; border-radius: 16px; padding: 25px; margin-bottom: 15px; text-align: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .main-card h3 { margin: 0; font-size: 22px; color: #e2e8f0; }
+
+        .title-group { font-size: 18px; color: #38bdf8; margin: 15px 0 10px 0; padding-right: 8px; border-right: 4px solid #38bdf8; }
+        
+        .audio-item { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .audio-info h4 { margin: 0 0 4px 0; font-size: 17px; color: #f1f5f9; }
+        .audio-info p { margin: 0; font-size: 13px; color: #94a3b8; }
+        
+        .controls { display: flex; gap: 8px; align-items: center; }
+        .btn-play { background: #22c55e; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-cache { background: #0284c7; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-cache.saved { background: #15803d; }
+
+        .player-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 2px solid #38bdf8; padding: 10px 15px; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 -4px 15px rgba(0,0,0,0.5); z-index: 100; }
+        .player-title { font-size: 14px; color: #38bdf8; font-weight: bold; text-align: center; }
+        audio { width: 100%; height: 40px; }
+    </style>
+</head>
+<body>
+
+    <!-- الواجهة الرئيسية -->
+    <div id="home-section" class="section active">
+        <div class="header"><h2>🚗 مشغل السيارة</h2></div>
+        <div class="main-card" onclick="showSection('quran-section')"><h3>📖 القرآن الكريم والتلاوات</h3></div>
+        <div class="main-card" onclick="showSection('song-section')"><h3>🎵 الأغاني الكردية</h3></div>
+    </div>
+
+    <!-- ================= قسم القرآن الكريم (بدون أي تغيير) ================= -->
+    <div id="quran-section" class="section">
+        <div class="header">
+            <h2>📖 تلاوات القرآن الكريم</h2>
+            <button class="nav-btn" onclick="showSection('home-section')">🏠 الرئيسية</button>
+        </div>
+
+        <!-- ياسر الدوسري -->
+        <div class="title-group">القارئ ياسر الدوسري</div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة الحاقة</h4><p>ياسر الدوسري</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server11.mp3quran.net/yasser/069.mp3', 'سورة الحاقة - ياسر الدوسري')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-y1" onclick="downloadWithProgress('https://server11.mp3quran.net/yasser/069.mp3', 'btn-y1')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة المؤمنون</h4><p>ياسر الدوسري</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server11.mp3quran.net/yasser/023.mp3', 'سورة المؤمنون - ياسر الدوسري')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-y2" onclick="downloadWithProgress('https://server11.mp3quran.net/yasser/023.mp3', 'btn-y2')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة لقمان</h4><p>ياسر الدوسري</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server11.mp3quran.net/yasser/031.mp3', 'سورة لقمان - ياسر الدوسري')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-y3" onclick="downloadWithProgress('https://server11.mp3quran.net/yasser/031.mp3', 'btn-y3')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة التكوير</h4><p>ياسر الدوسري</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server11.mp3quran.net/yasser/081.mp3', 'سورة التكوير - ياسر الدوسري')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-y4" onclick="downloadWithProgress('https://server11.mp3quran.net/yasser/081.mp3', 'btn-y4')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- محمد صديق المنشاوي -->
+        <div class="title-group">القارئ محمد صديق المنشاوي</div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة الرحمن</h4><p>محمد صديق المنشاوي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server10.mp3quran.net/minsh/055.mp3', 'سورة الرحمن - المنشاوي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-m1" onclick="downloadWithProgress('https://server10.mp3quran.net/minsh/055.mp3', 'btn-m1')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة القارعة</h4><p>محمد صديق المنشاوي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server10.mp3quran.net/minsh/101.mp3', 'سورة القارعة - المنشاوي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-m2" onclick="downloadWithProgress('https://server10.mp3quran.net/minsh/101.mp3', 'btn-m2')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة الضحى</h4><p>محمد صديق المنشاوي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server10.mp3quran.net/minsh/093.mp3', 'سورة الضحى - المنشاوي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-m3" onclick="downloadWithProgress('https://server10.mp3quran.net/minsh/093.mp3', 'btn-m3')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة الفجر</h4><p>محمد صديق المنشاوي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server10.mp3quran.net/minsh/089.mp3', 'سورة الفجر - المنشاوي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-m4" onclick="downloadWithProgress('https://server10.mp3quran.net/minsh/089.mp3', 'btn-m4')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- عبد الباسط عبد الصمد -->
+        <div class="title-group">القارئ عبد الباسط عبد الصمد</div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة الكهف</h4><p>عبد الباسط عبد الصمد</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server7.mp3quran.net/basit/018.mp3', 'سورة الكهف - عبد الباسط')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-b1" onclick="downloadWithProgress('https://server7.mp3quran.net/basit/018.mp3', 'btn-b1')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة يوسف</h4><p>عبد الباسط عبد الصمد</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server7.mp3quran.net/basit/012.mp3', 'سورة يوسف - عبد الباسط')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-b2" onclick="downloadWithProgress('https://server7.mp3quran.net/basit/012.mp3', 'btn-b2')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- رعد الكردي -->
+        <div class="title-group">القارئ رعد الكردي</div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة النجم</h4><p>رعد الكردي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server12.mp3quran.net/rkurd/053.mp3', 'سورة النجم - رعد الكردي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-r1" onclick="downloadWithProgress('https://server12.mp3quran.net/rkurd/053.mp3', 'btn-r1')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة طه</h4><p>رعد الكردي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server12.mp3quran.net/rkurd/020.mp3', 'سورة طه - رعد الكردي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-r2" onclick="downloadWithProgress('https://server12.mp3quran.net/rkurd/020.mp3', 'btn-r2')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة ق</h4><p>رعد الكردي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server12.mp3quran.net/rkurd/050.mp3', 'سورة ق - رعد الكردي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-r3" onclick="downloadWithProgress('https://server12.mp3quran.net/rkurd/050.mp3', 'btn-r3')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+        <div class="audio-item">
+            <div class="audio-info"><h4>سورة النمل</h4><p>رعد الكردي</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('https://server12.mp3quran.net/rkurd/027.mp3', 'سورة النمل - رعد الكردي')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-r4" onclick="downloadWithProgress('https://server12.mp3quran.net/rkurd/027.mp3', 'btn-r4')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <div style="height: 90px;"></div>
+    </div>
+
+    <!-- ================= قسم الأغاني الكردية (الأغاني الـ 10) ================= -->
+    <div id="song-section" class="section">
+        <div class="header">
+            <h2>🎵 الأغاني الكردية</h2>
+            <button class="nav-btn" onclick="showSection('home-section')">🏠 الرئيسية</button>
+        </div>
+
+        <div class="title-group">الأغاني الكردية المختارة (گۆرانی کوردی)</div>
+
+        <!-- الأغنية 1 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Charxi Baxt</h4><p>Hama Krmashani</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song1.mp3', 'Charxi Baxt - Hama Krmashani')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s1" onclick="downloadWithProgress('song1.mp3', 'btn-s1')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 2 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Dktor</h4><p>Hama Krmashani</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song2.mp3', 'Dktor - Hama Krmashani')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s2" onclick="downloadWithProgress('song2.mp3', 'btn-s2')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 3 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Shet Bwm</h4><p>Hama Krmashani</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song3.mp3', 'Shet Bwm - Hama Krmashani')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s3" onclick="downloadWithProgress('song3.mp3', 'btn-s3')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 4 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Qabrekm Bo Halkann</h4><p>Hama Krmashani</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song4.mp3', 'Qabrekm Bo Halkann - Hama Krmashani')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s4" onclick="downloadWithProgress('song4.mp3', 'btn-s4')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 5 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Da Bro Jem Bella</h4><p>Jegr Medya</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song5.mp3', 'Da Bro Jem Bella - Jegr Medya')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s5" onclick="downloadWithProgress('song5.mp3', 'btn-s5')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 6 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Hawlerya Hawlerya</h4><p>Jegr Medya</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song6.mp3', 'Hawlerya Hawlerya - Jegr Medya')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s6" onclick="downloadWithProgress('song6.mp3', 'btn-s6')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 7 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Amshaw Ba Dll Pryawa</h4><p>Jegr Medya</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song7.mp3', 'Amshaw Ba Dll Pryawa - Jegr Medya')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s7" onclick="downloadWithProgress('song7.mp3', 'btn-s7')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 8 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>La Kwey Azizi Dilm</h4><p>Jegr Medya</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song8.mp3', 'La Kwey Azizi Dilm - Jegr Medya')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s8" onclick="downloadWithProgress('song8.mp3', 'btn-s8')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 9 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Alla Lemdan Ba Tire</h4><p>Ham Ali</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song9.mp3', 'Alla Lemdan Ba Tire - Ham Ali')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s9" onclick="downloadWithProgress('song9.mp3', 'btn-s9')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <!-- الأغنية 10 -->
+        <div class="audio-item">
+            <div class="audio-info"><h4>Chuma Mali Ba Miwani</h4><p>گۆرانی کوردی</p></div>
+            <div class="controls">
+                <button class="btn-play" onclick="playAudio('song10.mp3', 'Chuma Mali Ba Miwani')">▶ تشغيل</button>
+                <button class="btn-cache" id="btn-s10" onclick="downloadWithProgress('song10.mp3', 'btn-s10')">📥 حفظ بالتطبيق</button>
+            </div>
+        </div>
+
+        <div style="height: 90px;"></div>
+    </div>
+
+    <!-- مشغل الصوت السفلي المدمج -->
+    <div class="player-bar">
+        <div class="player-title" id="current-title">اختر مقطعاً للتشغيل...</div>
+        <audio id="main-player" controls autoplay></audio>
+    </div>
+
+    <script>
+        const CACHE_NAME = 'car-app-media-v3';
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // تشغيل المقاطع محلياً من ذاكرة التطبيق (إذا تم حفظها) أو أونلاين
+        async function playAudio(url, title) {
+            const player = document.getElementById('main-player');
+            const titleLabel = document.getElementById('current-title');
+            
+            titleLabel.innerText = "جاري التشغيل: " + title;
+
+            if ('caches' in window) {
+                const cache = await caches.open(CACHE_NAME);
+                const response = await cache.match(url);
+                if (response) {
+                    const blob = await response.blob();
+                    player.src = URL.createObjectURL(blob);
+                    player.play();
+                    return;
+                }
+            }
+
+            player.src = url;
+            player.play();
+        }
+
+        // تنزيل الملفات وحفظها في ذاكرة التطبيق المحلية مع إظهار نسبة التحميل (%)
+        async function downloadWithProgress(url, btnId) {
+            const btn = document.getElementById(btnId);
+            btn.disabled = true;
+            btn.innerText = "جاري التحميل 0%";
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('فشل الاتصال');
+
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length');
+                let receivedLength = 0;
+                let chunks = [];
+
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    receivedLength += value.length;
+
+                    if (contentLength) {
+                        let percent = Math.round((receivedLength / contentLength) * 100);
+                        btn.innerText = `تحميل ${percent}%`;
+                    }
+                }
+
+                let blob = new Blob(chunks);
+                const cache = await caches.open(CACHE_NAME);
+                await cache.put(url, new Response(blob));
+
+                btn.innerText = "✓ محفوظ أوفلاين";
+                btn.classList.add('saved');
+                btn.disabled = false;
+            } catch (e) {
+                btn.innerText = "خطأ بالتحميل";
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>
