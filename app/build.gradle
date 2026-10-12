@@ -1,10 +1,38 @@
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.m7u.downloader'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.m7u.downloader"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        jniLibs { useLegacyPackaging = true }
     }
 }
-rootProject.name = "M7U Downloader"
-include ':app'
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.github.yausername.youtubedl-android:library:0.15.0'
+    implementation 'com.github.yausername.youtubedl-android:ffmpeg:0.15.0'
+}
