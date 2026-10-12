@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل التلاوات والأغاني الاحترافي</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: #121212; color: #fff; padding-bottom: 90px; }
+        header { background: #1f1f1f; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-bottom: 2px solid #00acc1; }
+        .tabs { display: flex; background: #1a1a1a; cursor: pointer; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-weight: bold; color: #aaa; border-bottom: 3px solid transparent; }
+        .tab.active { color: #00acc1; border-bottom: 3px solid #00acc1; background: #252525; }
+        .content { display: none; padding: 10px; }
+        .content.active { display: block; }
+        .item-card { background: #1e1e1e; margin: 8px 0; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border-right: 4px solid #00acc1; }
+        .info h4 { font-size: 16px; margin-bottom: 4px; }
+        .info p { font-size: 13px; color: #aaa; }
+        .actions button { background: #333; border: none; color: #fff; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-left: 5px; font-size: 14px; }
+        .actions button.downloaded { background: #2e7d32; }
+        .actions button.play { background: #00acc1; }
+        /* شريط التشغيل السفلي */
+        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1f1f1f; padding: 12px; display: flex; flex-direction: column; align-items: center; border-top: 1px solid #333; }
+        .player-info { width: 100%; text-align: center; margin-bottom: 5px; }
+        .player-info h5 { font-size: 14px; color: #00acc1; }
+        .player-info p { font-size: 12px; color: #aaa; }
+        audio { width: 100%; height: 35px; }
+    </style>
+</head>
+<body>
+
+    <header>مشغل التلاوات والأغاني (بدون إنترنت)</header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('tilawat', this)">قسم التلاوات</div>
+        <div class="tab" onclick="switchTab('songs', this)">قسم الأغاني</div>
+    </div>
+
+    <!-- قسم التلاوات -->
+    <div id="tilawat" class="content active">
+        <div id="tilawat-list"></div>
+    </div>
+
+    <!-- قسم الأغاني -->
+    <div id="songs" class="content">
+        <div id="songs-list"></div>
+    </div>
+
+    <!-- شريط التشغيل السفلي -->
+    <div class="player-bar">
+        <div class="player-info">
+            <h5 id="current-title">اختر مقطعاً للتشغيل</h5>
+            <p id="current-artist">-</p>
+        </div>
+        <audio id="audio-player" controls></audio>
+    </div>
+
+    <script>
+        // بيانات التلاوات
+        const tilawatData = [
+            { title: 'سورة الحاقة', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/069.mp3' },
+            { title: 'سورة المؤمنون', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/023.mp3' },
+            { title: 'سورة لقمان', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/031.mp3' },
+            { title: 'سورة التكوير', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/081.mp3' },
+            { title: 'سورة الرحمن', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/055.mp3' },
+            { title: 'سورة القارعة', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/101.mp3' },
+            { title: 'سورة الضحى', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/093.mp3' },
+            { title: 'سورة الفجر', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/089.mp3' },
+            { title: 'سورة الكهف', artist: 'عبد الباسط عبد الصمد', url: 'https://server7.mp3quran.net/abdulsamad/018.mp3' },
+            { title: 'سورة يوسف', artist: 'عبد الباسط عبد الصمد', url: 'https://server7.mp3quran.net/abdulsamad/012.mp3' },
+            { title: 'سورة النجم', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/053.mp3' },
+            { title: 'سورة طه', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/020.mp3' },
+            { title: 'سورة ق', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/050.mp3' },
+            { title: 'سورة النمل', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/027.mp3' }
+        ];
+
+        // بيانات الأغاني العشرة بروابطها المباشرة
+        const songsData = [
+            { title: 'Charxi Baxt', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45465?hash=95ff947c74b1f52a&d=true' },
+            { title: 'Dktor', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45468?hash=29d198714cf3c5ee&d=true' },
+            { title: 'Shet bwm', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45467?hash=9fc1ca6e4eb5fd45&d=true' },
+            { title: 'Qabrekm-Bo Halkann', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45471?hash=cb671e3b66a3fff5&d=true' },
+            { title: 'Da Bro Jem Bella', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45473?hash=b6d193357cac34b6&d=true' },
+            { title: 'Hawlerya Hawlerya', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45475?hash=fa944164e2d50e35&d=true' },
+            { title: 'Amshaw ba Dll Pryawa', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45477?hash=67fc2055dafff3d1&d=true' },
+            { title: 'La Kwey Azizi dilm', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45483?hash=678f466f240f95e8&d=true' },
+            { title: 'Alla Lemdan Ba Tire', artist: 'ham ali', url: 'https://royalfiletolink.koyeb.app/stream/45479?hash=a6cefc47ce0933ab&d=true' },
+            { title: 'Chuma Mali Ba Miwani', artist: 'فنان', url: 'https://royalfiletolink.koyeb.app/stream/45481?hash=4787ece0b13220e6&d=true' }
+        ];
+
+        const CACHE_NAME = 'media-cache-v1';
+
+        function renderLists() {
+            renderSection('tilawat-list', tilawatData);
+            renderSection('songs-list', songsData);
+            checkDownloadedStatus();
+        }
+
+        function renderSection(containerId, data) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            data.forEach((item) => {
+                container.innerHTML += `
+                    <div class="item-card">
+                        <div class="info">
+                            <h4>${item.title}</h4>
+                            <p>${item.artist}</p>
+                        </div>
+                        <div class="actions">
+                            <button id="btn-dl-${item.title}" onclick="downloadMedia('${item.url}', '${item.title}')">📥 حفظ</button>
+                            <button class="play" onclick="playMedia('${item.url}', '${item.title}', '${item.artist}')">▶ تشغيل</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // حفظ الصوت في ذاكرة التطبيق للتشغيل أوفلاين
+        async function downloadMedia(url, title) {
+            try {
+                const cache = await caches.open(CACHE_NAME);
+                await cache.add(url);
+                alert(`تم حفظ "${title}" بنجاح! يمكنك الآن تشغيلها بدون إنترنت.`);
+                checkDownloadedStatus();
+            } catch (e) {
+                alert('حدث خطأ أثناء الحفظ، تأكد من وجود اتصال بالإنترنت.');
+            }
+        }
+
+        // فحص الملفات المحفوظة مسبقاً
+        async function checkDownloadedStatus() {
+            const cache = await caches.open(CACHE_NAME);
+            const allItems = [...tilawatData, ...songsData];
+            for (let item of allItems) {
+                const match = await cache.match(item.url);
+                const btn = document.getElementById(`btn-dl-${item.title}`);
+                if (match && btn) {
+                    btn.innerText = '✔ محفوظة';
+                    btn.classList.add('downloaded');
+                }
+            }
+        }
+
+        // تشغيل الصوت مباشرة
+        function playMedia(url, title, artist) {
+            const player = document.getElementById('audio-player');
+            document.getElementById('current-title').innerText = title;
+            document.getElementById('current-artist').innerText = artist;
+            player.src = url;
+            player.play();
+        }
+
+        window.onload = renderLists;
+    </script>
+</body>
+</html>
