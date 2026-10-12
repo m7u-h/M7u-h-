@@ -3,170 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل السيارة الذكي</title>
+    <title>App Muhammad - Downloader</title>
+    <!-- استيراد خط Tajawal الأنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
-        body { background-color: #0b0f19; color: #fff; padding-bottom: 100px; }
-        header { background: #111827; padding: 18px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 2px solid #06b6d4; color: #06b6d4; }
-        .tabs { display: flex; background: #1f2937; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-weight: bold; color: #9ca3af; cursor: pointer; border-bottom: 3px solid transparent; font-size: 16px; }
-        .tab.active { color: #06b6d4; border-bottom: 3px solid #06b6d4; background: #111827; }
-        .content { display: none; padding: 12px; }
-        .content.active { display: block; }
-        .item-card { background: #1f2937; margin: 10px 0; padding: 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; border-right: 5px solid #06b6d4; }
-        .info h4 { font-size: 18px; margin-bottom: 4px; color: #f3f4f6; }
-        .info p { font-size: 14px; color: #9ca3af; }
-        .actions button { background: #374151; border: none; color: #fff; padding: 10px 16px; border-radius: 6px; cursor: pointer; margin-left: 8px; font-size: 15px; font-weight: bold; }
-        .actions button.saved { background: #059669; }
-        .actions button.play { background: #0891b2; }
-        
-        /* شريط التشغيل السفلي الخاص بالسيارة */
-        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111827; padding: 15px; display: flex; flex-direction: column; align-items: center; border-top: 2px solid #374151; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); }
-        .player-info { width: 100%; text-align: center; margin-bottom: 8px; }
-        .player-info h5 { font-size: 16px; color: #22d3ee; }
-        .player-info p { font-size: 13px; color: #9ca3af; }
-        audio { width: 100%; height: 40px; }
+        :root {
+            --bg-color: #0b0b0f;
+            --surface-color: #16161f;
+            --surface-hover: #1f1f2e;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            .app-container {
+                border: 1px solid var(--border-color);
+                border-radius: 36px;
+                height: 840px;
+            }
+        }
+
+        /* Header & Rights Banner */
+        header {
+            padding: 20px 24px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* تعديل الشعار ليصبح App Muhammad بخط احترافي */
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #818cf8 20%, #ffffff 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: capitalize;
+        }
+
+        .downloads-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .downloads-badge {
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* بانر الحقوق ويوزر m7u_h- والأيقونات */
+        .rights-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(31, 31, 46, 0.6));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .username-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .social-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--surface-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .social-icon svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
+        }
+
+        /* Main Screen */
+        .screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .giant-btn-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            opacity: 0.15;
+            animation: pulse 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0.05; }
+            100% { transform: scale(0.95); opacity: 0.3; }
+        }
+
+        .giant-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+            z-index: 2;
+            transition: transform 0.15s ease;
+        }
+
+        .giant-btn:active {
+            transform: scale(0.92);
+        }
+
+        .giant-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+
+        .format-selector {
+            display: flex;
+            background: var(--surface-color);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            width: 220px;
+        }
+
+        .format-option {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .format-option.active {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            min-height: 24px;
+            padding: 0 10px;
+        }
+
+        /* Downloads Modal Screen */
+        .downloads-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .downloads-screen.open {
+            transform: translateY(0);
+        }
+
+        .downloads-header {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .close-screen-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .downloads-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+
+        .track-item {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .track-play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .track-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .mini-player {
+            background: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mini-player.active {
+            display: flex;
+        }
+
+        .mini-player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        audio { display: none; }
     </style>
 </head>
 <body>
 
-    <header>🚗 مشغل السيارة بدون إنترنت</header>
-
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('tilawat', this)">📖 قسم التلاوات</div>
-        <div class="tab" onclick="switchTab('songs', this)">🎵 قسم الأغاني</div>
-    </div>
-
-    <!-- قسم التلاوات -->
-    <div id="tilawat" class="content active">
-        <div id="tilawat-list"></div>
-    </div>
-
-    <!-- قسم الأغاني -->
-    <div id="songs" class="content">
-        <div id="songs-list"></div>
-    </div>
-
-    <!-- شريط التشغيل السفلي -->
-    <div class="player-bar">
-        <div class="player-info">
-            <h5 id="current-title">اختر مقطعاً للتشغيل</h5>
-            <p id="current-artist">-</p>
+<div class="app-container">
+    <header>
+        <div class="top-bar">
+            <div class="logo">App Muhammad</div>
+            <button class="downloads-btn" onclick="toggleDownloads()">
+                <span>التنزيلات</span>
+                <div class="downloads-badge" id="badgeCount">0</div>
+            </button>
         </div>
-        <audio id="audio-player" controls></audio>
+        <!-- بانر الحقوق ويوزر m7u_h- والأيقونات الثلاث (سناب، تيك توك، تلكرام) -->
+        <div class="rights-banner">
+            <span class="username-text">m7u_h-</span>
+            <div class="social-icons">
+                <!-- سناب شات -->
+                <a href="https://snapchat.com" target="_blank" class="social-icon" title="Snapchat">
+                    <svg viewBox="0 0 24 24"><path d="M12.163 3.014c1.867 0 3.395 1.503 3.395 3.35 0 .807-.308 1.583-.865 2.18l.013.007c1.378.14 2.872.678 3.992 1.666 1.054.935 1.574 2.305 1.348 3.738-.17 1.085-.778 2.05-1.636 2.665.312.396.486.912.484 1.436-.002.825-.425 1.564-1.127 1.984-.963.578-2.316.713-3.797.746-.11.003-.223.004-.336.004-.848 0-1.745-.06-2.58-.218-1.554-.298-2.92-1.096-3.83-2.247-.48-.607-.75-1.375-.75-2.155 0-.61.205-1.21.576-1.696-.75-.68-1.285-1.58-1.536-2.58-.31-1.233-.04-2.553.742-3.565 1.01-1.305 2.64-1.87 4.14-2.022.062-.007.123-.012.185-.015.534-.694 1.35-1.09 2.222-1.09zm0 1.5c-.567 0-1.11.272-1.46.735l-.14.184-.194.04c-1.303.266-2.613.782-3.385 1.782-.547.707-.735 1.603-.518 2.464.205.823.704 1.54 1.396 2.022l.332.232-.178.36c-.288.58-.426 1.203-.426 1.832 0 .584.2 1.134.596 1.634.73 0.925 1.83 1.608 3.144 1.86.726.139 1.517.2 2.277.2.1 0 .2.002.3.004 1.275-.028 2.378-.146 3.092-.574.38-.228.613-.61.614-1.05 0-.306-.11-.595-.314-.827-.373-.43-.96-.69-1.576-.715l-.462-.02-.132-.444c-.26-.88-.04-1.84.58-2.56.55-.64 1.34-1.04 2.19-1.12.55-.05 1.1-.38 1.32-.91.22-.54.12-1.16-.27-1.57-.75-.8-1.87-1.22-3.02-1.34l-.45-.04-.15-.43c-.42-.12-.86-.18-1.3-.18z"/></svg>
+                </a>
+                <!-- تيك توك -->
+                <a href="https://tiktok.com" target="_blank" class="social-icon" title="TikTok">
+                    <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+                </a>
+                <!-- تليجرام -->
+                <a href="https://t.me" target="_blank" class="social-icon" title="Telegram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm5.8 7.3-1.9 9c-.1.6-.5.8-1 .5l-2.8-2.1-1.4 1.3c-.2.2-.3.3-.6.3l.2-2.9 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.8-.9c-.6-.2-.6-.6.1-.9l11-4.2c.5-.2 1 .1.8.8z"/></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="screen">
+        <div class="giant-btn-wrapper">
+            <div class="pulse-ring"></div>
+            <button class="giant-btn" onclick="handleDownload()">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span style="font-weight:700; font-size: 0.95rem;">لصق وتحميل</span>
+            </button>
+        </div>
+
+        <div class="format-selector">
+            <div class="format-option active" onclick="setFormat('mp3', this)">صوت MP3</div>
+            <div class="format-option" onclick="setFormat('mp4', this)">فيديو MP4</div>
+        </div>
+
+        <div class="status-text" id="statusText">اضغط الزر للتحميل المباشر بدون علامة مائية</div>
     </div>
 
-    <script>
-        const tilawatData = [
-            { title: 'سورة الحاقة', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/069.mp3' },
-            { title: 'سورة المؤمنون', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/023.mp3' },
-            { title: 'سورة لقمان', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/031.mp3' },
-            { title: 'سورة التكوير', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/081.mp3' },
-            { title: 'سورة الرحمن', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/055.mp3' },
-            { title: 'سورة القارعة', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/101.mp3' },
-            { title: 'سورة الضحى', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/093.mp3' },
-            { title: 'سورة الفجر', artist: 'محمد صديق المنشاوي', url: 'https://server11.mp3quran.net/minsh/089.mp3' },
-            { title: 'سورة الكهف', artist: 'عبد الباسط عبد الصمد', url: 'https://server7.mp3quran.net/abdulsamad/018.mp3' },
-            { title: 'سورة يوسف', artist: 'عبد الباسط عبد الصمد', url: 'https://server7.mp3quran.net/abdulsamad/012.mp3' },
-            { title: 'سورة النجم', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/053.mp3' },
-            { title: 'سورة طه', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/020.mp3' },
-            { title: 'سورة ق', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/050.mp3' },
-            { title: 'سورة النمل', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/027.mp3' }
-        ];
+    <div class="downloads-screen" id="downloadsScreen">
+        <div class="downloads-header">
+            <div style="font-weight:700;">الملفات المنزلة</div>
+            <button class="close-screen-btn" onclick="toggleDownloads()">✕</button>
+        </div>
 
-        const songsData = [
-            { title: 'Charxi Baxt', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45465?hash=95ff947c74b1f52a&d=true' },
-            { title: 'Dktor', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45468?hash=29d198714cf3c5ee&d=true' },
-            { title: 'Shet bwm', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45467?hash=9fc1ca6e4eb5fd45&d=true' },
-            { title: 'Qabrekm-Bo Halkann', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45471?hash=cb671e3b66a3fff5&d=true' },
-            { title: 'Da Bro Jem Bella', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45473?hash=b6d193357cac34b6&d=true' },
-            { title: 'Hawlerya Hawlerya', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45475?hash=fa944164e2d50e35&d=true' },
-            { title: 'Amshaw ba Dll Pryawa', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45477?hash=67fc2055dafff3d1&d=true' },
-            { title: 'La Kwey Azizi dilm', artist: 'Jegr Medya', url: 'https://royalfiletolink.koyeb.app/stream/45483?hash=678f466f240f95e8&d=true' },
-            { title: 'Alla Lemdan Ba Tire', artist: 'ham ali', url: 'https://royalfiletolink.koyeb.app/stream/45479?hash=a6cefc47ce0933ab&d=true' },
-            { title: 'Chuma Mali Ba Miwani', artist: 'فنان', url: 'https://royalfiletolink.koyeb.app/stream/45481?hash=4787ece0b13220e6&d=true' }
-        ];
+        <div class="downloads-list" id="downloadsList">
+            <div class="empty-state" id="emptyState">
+                <span>لا توجد ملفات منزلة بعد</span>
+            </div>
+        </div>
 
-        const CACHE_NAME = 'car-audio-cache-v1';
+        <div class="mini-player" id="miniPlayer">
+            <div class="mini-player-info">
+                <span id="miniPlayerTitle" style="font-size:0.85rem; font-weight:600;">جاري التشغيل...</span>
+                <button onclick="togglePlayPause()" style="background:none; border:none; color:white; cursor:pointer;" id="playPauseBtn">⏸</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function renderLists() {
-            renderSection('tilawat-list', tilawatData);
-            renderSection('songs-list', songsData);
-            checkSavedStatus();
+<audio id="audioElement" onended="onAudioEnded()"></audio>
+
+<script>
+    let selectedFormat = 'mp3';
+    let downloads = JSON.parse(localStorage.getItem('blackhole_downloads') || '[]');
+    let currentAudioId = null;
+
+    updateDownloadsUI();
+
+    function setFormat(format, element) {
+        selectedFormat = format;
+        document.querySelectorAll('.format-option').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    async function handleDownload() {
+        const statusText = document.getElementById('statusText');
+        
+        try {
+            statusText.textContent = "جاري قراءة الحافظة...";
+            
+            let url = "";
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                url = await navigator.clipboard.readText();
+            }
+
+            if (!url || !url.startsWith("http")) {
+                statusText.textContent = "يرجى نسخ رابط فيديو صالح من يوتيوب، تيك توك أو انستا أولاً!";
+                return;
+            }
+
+            statusText.textContent = "جاري معالجة الرابط وسحب الملف بدون علامة مائية...";
+
+            const apiUrl = `https://api.cobalt.tools/api/json`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    url: url,
+                    downloadMode: selectedFormat === 'mp3' ? "audio" : "auto",
+                    audioFormat: selectedFormat === 'mp3' ? "mp3" : undefined
+                })
+            });
+
+            const data = await response.json();
+            const mediaUrl = data.url || data.picker?.[0]?.url;
+
+            if (mediaUrl) {
+                statusText.textContent = "تم استخراج الملف بنجاح! جاري التنزيل لجهازك...";
+                
+                const title = (selectedFormat === 'mp3' ? "صوت - " : "فيديو - ") + new Date().toLocaleTimeString('ar-EG');
+                const newDownload = {
+                    id: Date.now(),
+                    title: title,
+                    format: selectedFormat.toUpperCase(),
+                    url: mediaUrl
+                };
+
+                downloads.unshift(newDownload);
+                saveAndRefresh();
+
+                window.location.href = mediaUrl;
+
+                setTimeout(() => {
+                    statusText.textContent = "تم الحفظ في ملفات الجهاز بنجاح!";
+                }, 2500);
+
+            } else {
+                statusText.textContent = "تعذر استخراج الرابط، تأكد من صحة الرابط المدخل.";
+            }
+
+        } catch (err) {
+            console.error(err);
+            statusText.textContent = "حدث خطأ أثناء الاتصال، تأكد من الإنترنت.";
+        }
+    }
+
+    function toggleDownloads() {
+        document.getElementById('downloadsScreen').classList.toggle('open');
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('blackhole_downloads', JSON.stringify(downloads));
+        updateDownloadsUI();
+    }
+
+    function updateDownloadsUI() {
+        const badge = document.getElementById('badgeCount');
+        const list = document.getElementById('downloadsList');
+        const emptyState = document.getElementById('emptyState');
+
+        badge.textContent = downloads.length;
+
+        if (downloads.length === 0) {
+            emptyState.style.display = 'flex';
+            list.innerHTML = '';
+            list.appendChild(emptyState);
+            return;
         }
 
-        function renderSection(containerId, data) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            data.forEach((item) => {
-                const safeId = btoa(unescape(encodeURIComponent(item.title))).replace(/=/g, '');
-                container.innerHTML += `
-                    <div class="item-card">
-                        <div class="info">
-                            <h4>${item.title}</h4>
-                            <p>${item.artist}</p>
-                        </div>
-                        <div class="actions">
-                            <button id="btn-${safeId}" onclick="saveAudio('${item.url}', '${safeId}', '${item.title}')">💾 حفظ</button>
-                            <button class="play" onclick="playAudio('${item.url}', '${item.title}', '${item.artist}')">▶ تشغيل</button>
-                        </div>
+        emptyState.style.display = 'none';
+        
+        let html = '';
+        downloads.forEach(item => {
+            html += `
+                <div class="track-item">
+                    <button class="track-play-btn" onclick="playTrack('${item.url}', '${item.title}', ${item.id})">▶</button>
+                    <div class="track-info">
+                        <div class="track-name">${item.title}</div>
+                        <div class="track-meta"><span>${item.format}</span></div>
                     </div>
-                `;
-            });
-        }
+                    <button class="track-delete" onclick="deleteTrack(${item.id})">🗑</button>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
-        }
+    const audioElement = document.getElementById('audioElement');
+    const miniPlayer = document.getElementById('miniPlayer');
 
-        // حفظ الصوت داخل ذاكرة التطبيق بدون فتح أي روابط خارجية
-        async function saveAudio(url, safeId, title) {
-            try {
-                const btn = document.getElementById(`btn-${safeId}`);
-                btn.innerText = 'جاري الحفظ...';
-                
-                const cache = await caches.open(CACHE_NAME);
-                await cache.add(url);
-                
-                btn.innerText = '✔ محفوض';
-                btn.classList.add('saved');
-                alert(`تم حفظ "${title}" في ذاكرة التطبيق بنجاح!`);
-            } catch (e) {
-                alert('فشل الحفظ: تأكد من الاتصال بالإنترنت أثناء الحفظ لأول مرة.');
-                const btn = document.getElementById(`btn-${safeId}`);
-                btn.innerText = '💾 حفظ';
-            }
-        }
+    function playTrack(url, title, id) {
+        audioElement.src = url;
+        audioElement.play();
+        currentAudioId = id;
+        document.getElementById('miniPlayerTitle').textContent = title;
+        miniPlayer.classList.add('active');
+        document.getElementById('playPauseBtn').textContent = '⏸';
+    }
 
-        async function checkSavedStatus() {
-            const cache = await caches.open(CACHE_NAME);
-            const allItems = [...tilawatData, ...songsData];
-            for (let item of allItems) {
-                const safeId = btoa(unescape(encodeURIComponent(item.title))).replace(/=/g, '');
-                const match = await cache.match(item.url);
-                const btn = document.getElementById(`btn-${safeId}`);
-                if (match && btn) {
-                    btn.innerText = '✔ محفوض';
-                    btn.classList.add('saved');
-                }
-            }
-        }
-
-        // تشغيل الصوت (يعمل أوفلاين من الذاكرة إذا تم حفظه مسبقاً)
-        function playAudio(url, title, artist) {
-            const player = document.getElementById('audio-player');
-            document.getElementById('current-title').innerText = title;
-            document.getElementById('current-artist').innerText = artist;
-            player.src = url;
-            player.play().catch(() => {
-                alert('تعذر التشغيل، يرجى التأكد من حفظ الملف أو الاتصال بالإنترنت.');
-            });
-        }
-
-        window.onload = renderLists;
-    </script>
-</body>
-</html>
+    function togglePlayPause() {
+        if (audioElement.paused) {
+            audioElement.play();
+            document.getElementById('playPauseBtn').textContent = '⏸';
+  
