@@ -607,4 +607,56 @@
         list.innerHTML = html;
     }
 
-    const audioElement =
+    
+    const audioElement = document.getElementById('audioElement');
+
+    function playTrack(url, title, id) {
+        if (!url || !url.match(/^https?:\/\//i)) {
+            document.getElementById('statusText').textContent =
+                'ما عدنا رابط ملف صوتي مباشر لتشغيله.';
+            return;
+        }
+
+        audioElement.src = url;
+        audioElement.play().then(() => {
+            currentAudioId = id;
+            document.getElementById('miniPlayerTitle').textContent = title;
+            document.getElementById('miniPlayer').classList.add('active');
+            document.getElementById('playPauseBtn').textContent = '⏸';
+        }).catch(() => {
+            document.getElementById('statusText').textContent =
+                'تعذر تشغيل الصوت. الرابط قد لا يكون ملفًا صوتيًا مباشرًا.';
+        });
+    }
+
+    function togglePlayPause() {
+        if (audioElement.paused) {
+            audioElement.play().catch(() => {
+                document.getElementById('statusText').textContent =
+                    'تعذر استئناف التشغيل.';
+            });
+            document.getElementById('playPauseBtn').textContent = '⏸';
+        } else {
+            audioElement.pause();
+            document.getElementById('playPauseBtn').textContent = '▶';
+        }
+    }
+
+    function onAudioEnded() {
+        currentAudioId = null;
+        document.getElementById('playPauseBtn').textContent = '▶';
+    }
+
+    function deleteTrack(id) {
+        downloads = downloads.filter(item => item.id !== id);
+
+        if (currentAudioId === id) {
+            audioElement.pause();
+            audioElement.removeAttribute('src');
+            currentAudioId = null;
+            document.getElementById('miniPlayer').classList.remove('active');
+        }
+
+        saveAndRefresh();
+    }
+    
