@@ -3,37 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل التلاوات والأغاني الاحترافي</title>
+    <title>مشغل السيارة الذكي</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
-        body { background-color: #121212; color: #fff; padding-bottom: 90px; }
-        header { background: #1f1f1f; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-bottom: 2px solid #00acc1; }
-        .tabs { display: flex; background: #1a1a1a; cursor: pointer; }
-        .tab { flex: 1; padding: 12px; text-align: center; font-weight: bold; color: #aaa; border-bottom: 3px solid transparent; }
-        .tab.active { color: #00acc1; border-bottom: 3px solid #00acc1; background: #252525; }
-        .content { display: none; padding: 10px; }
+        body { background-color: #0b0f19; color: #fff; padding-bottom: 100px; }
+        header { background: #111827; padding: 18px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 2px solid #06b6d4; color: #06b6d4; }
+        .tabs { display: flex; background: #1f2937; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-weight: bold; color: #9ca3af; cursor: pointer; border-bottom: 3px solid transparent; font-size: 16px; }
+        .tab.active { color: #06b6d4; border-bottom: 3px solid #06b6d4; background: #111827; }
+        .content { display: none; padding: 12px; }
         .content.active { display: block; }
-        .item-card { background: #1e1e1e; margin: 8px 0; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border-right: 4px solid #00acc1; }
-        .info h4 { font-size: 16px; margin-bottom: 4px; }
-        .info p { font-size: 13px; color: #aaa; }
-        .actions button { background: #333; border: none; color: #fff; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-left: 5px; font-size: 14px; }
-        .actions button.downloaded { background: #2e7d32; }
-        .actions button.play { background: #00acc1; }
-        /* شريط التشغيل السفلي */
-        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1f1f1f; padding: 12px; display: flex; flex-direction: column; align-items: center; border-top: 1px solid #333; }
-        .player-info { width: 100%; text-align: center; margin-bottom: 5px; }
-        .player-info h5 { font-size: 14px; color: #00acc1; }
-        .player-info p { font-size: 12px; color: #aaa; }
-        audio { width: 100%; height: 35px; }
+        .item-card { background: #1f2937; margin: 10px 0; padding: 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; border-right: 5px solid #06b6d4; }
+        .info h4 { font-size: 18px; margin-bottom: 4px; color: #f3f4f6; }
+        .info p { font-size: 14px; color: #9ca3af; }
+        .actions button { background: #374151; border: none; color: #fff; padding: 10px 16px; border-radius: 6px; cursor: pointer; margin-left: 8px; font-size: 15px; font-weight: bold; }
+        .actions button.saved { background: #059669; }
+        .actions button.play { background: #0891b2; }
+        
+        /* شريط التشغيل السفلي الخاص بالسيارة */
+        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111827; padding: 15px; display: flex; flex-direction: column; align-items: center; border-top: 2px solid #374151; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); }
+        .player-info { width: 100%; text-align: center; margin-bottom: 8px; }
+        .player-info h5 { font-size: 16px; color: #22d3ee; }
+        .player-info p { font-size: 13px; color: #9ca3af; }
+        audio { width: 100%; height: 40px; }
     </style>
 </head>
 <body>
 
-    <header>مشغل التلاوات والأغاني (بدون إنترنت)</header>
+    <header>🚗 مشغل السيارة بدون إنترنت</header>
 
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('tilawat', this)">قسم التلاوات</div>
-        <div class="tab" onclick="switchTab('songs', this)">قسم الأغاني</div>
+        <div class="tab active" onclick="switchTab('tilawat', this)">📖 قسم التلاوات</div>
+        <div class="tab" onclick="switchTab('songs', this)">🎵 قسم الأغاني</div>
     </div>
 
     <!-- قسم التلاوات -->
@@ -56,7 +57,6 @@
     </div>
 
     <script>
-        // بيانات التلاوات
         const tilawatData = [
             { title: 'سورة الحاقة', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/069.mp3' },
             { title: 'سورة المؤمنون', artist: 'ياسر الدوسري', url: 'https://server11.mp3quran.net/yasser/023.mp3' },
@@ -74,7 +74,6 @@
             { title: 'سورة النمل', artist: 'رعد الكردي', url: 'https://server12.mp3quran.net/raad/027.mp3' }
         ];
 
-        // بيانات الأغاني العشرة بروابطها المباشرة
         const songsData = [
             { title: 'Charxi Baxt', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45465?hash=95ff947c74b1f52a&d=true' },
             { title: 'Dktor', artist: 'hama Krmashani', url: 'https://royalfiletolink.koyeb.app/stream/45468?hash=29d198714cf3c5ee&d=true' },
@@ -88,18 +87,19 @@
             { title: 'Chuma Mali Ba Miwani', artist: 'فنان', url: 'https://royalfiletolink.koyeb.app/stream/45481?hash=4787ece0b13220e6&d=true' }
         ];
 
-        const CACHE_NAME = 'media-cache-v1';
+        const CACHE_NAME = 'car-audio-cache-v1';
 
         function renderLists() {
             renderSection('tilawat-list', tilawatData);
             renderSection('songs-list', songsData);
-            checkDownloadedStatus();
+            checkSavedStatus();
         }
 
         function renderSection(containerId, data) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             data.forEach((item) => {
+                const safeId = btoa(unescape(encodeURIComponent(item.title))).replace(/=/g, '');
                 container.innerHTML += `
                     <div class="item-card">
                         <div class="info">
@@ -107,8 +107,8 @@
                             <p>${item.artist}</p>
                         </div>
                         <div class="actions">
-                            <button id="btn-dl-${item.title}" onclick="downloadMedia('${item.url}', '${item.title}')">📥 حفظ</button>
-                            <button class="play" onclick="playMedia('${item.url}', '${item.title}', '${item.artist}')">▶ تشغيل</button>
+                            <button id="btn-${safeId}" onclick="saveAudio('${item.url}', '${safeId}', '${item.title}')">💾 حفظ</button>
+                            <button class="play" onclick="playAudio('${item.url}', '${item.title}', '${item.artist}')">▶ تشغيل</button>
                         </div>
                     </div>
                 `;
@@ -122,39 +122,48 @@
             element.classList.add('active');
         }
 
-        // حفظ الصوت في ذاكرة التطبيق للتشغيل أوفلاين
-        async function downloadMedia(url, title) {
+        // حفظ الصوت داخل ذاكرة التطبيق بدون فتح أي روابط خارجية
+        async function saveAudio(url, safeId, title) {
             try {
+                const btn = document.getElementById(`btn-${safeId}`);
+                btn.innerText = 'جاري الحفظ...';
+                
                 const cache = await caches.open(CACHE_NAME);
                 await cache.add(url);
-                alert(`تم حفظ "${title}" بنجاح! يمكنك الآن تشغيلها بدون إنترنت.`);
-                checkDownloadedStatus();
+                
+                btn.innerText = '✔ محفوض';
+                btn.classList.add('saved');
+                alert(`تم حفظ "${title}" في ذاكرة التطبيق بنجاح!`);
             } catch (e) {
-                alert('حدث خطأ أثناء الحفظ، تأكد من وجود اتصال بالإنترنت.');
+                alert('فشل الحفظ: تأكد من الاتصال بالإنترنت أثناء الحفظ لأول مرة.');
+                const btn = document.getElementById(`btn-${safeId}`);
+                btn.innerText = '💾 حفظ';
             }
         }
 
-        // فحص الملفات المحفوظة مسبقاً
-        async function checkDownloadedStatus() {
+        async function checkSavedStatus() {
             const cache = await caches.open(CACHE_NAME);
             const allItems = [...tilawatData, ...songsData];
             for (let item of allItems) {
+                const safeId = btoa(unescape(encodeURIComponent(item.title))).replace(/=/g, '');
                 const match = await cache.match(item.url);
-                const btn = document.getElementById(`btn-dl-${item.title}`);
+                const btn = document.getElementById(`btn-${safeId}`);
                 if (match && btn) {
-                    btn.innerText = '✔ محفوظة';
-                    btn.classList.add('downloaded');
+                    btn.innerText = '✔ محفوض';
+                    btn.classList.add('saved');
                 }
             }
         }
 
-        // تشغيل الصوت مباشرة
-        function playMedia(url, title, artist) {
+        // تشغيل الصوت (يعمل أوفلاين من الذاكرة إذا تم حفظه مسبقاً)
+        function playAudio(url, title, artist) {
             const player = document.getElementById('audio-player');
             document.getElementById('current-title').innerText = title;
             document.getElementById('current-artist').innerText = artist;
             player.src = url;
-            player.play();
+            player.play().catch(() => {
+                alert('تعذر التشغيل، يرجى التأكد من حفظ الملف أو الاتصال بالإنترنت.');
+            });
         }
 
         window.onload = renderLists;
