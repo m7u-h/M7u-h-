@@ -3,230 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>M7U Downloader</title>
+<title>app m7u-h</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
-    --bg:#0a0a0f;
-    --card:#15151f;
-    --card2:#1d1d2b;
-    --accent:#00e0b8;
-    --accent2:#00b8ff;
-    --text:#ffffff;
-    --muted:#7a7a90;
-    --danger:#ff4757;
+    --bg:#0a0a0f; --card:#15151f; --card2:#1d1d2b;
+    --accent:#00e0b8; --accent2:#00b8ff;
+    --text:#fff; --muted:#7a7a90; --danger:#ff4757;
   }
   html,body {
-    height:100%;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Segoe UI', Tahoma, sans-serif;
-    overflow:hidden;
-    user-select:none;
+    height:100%; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', Tahoma, sans-serif; overflow:hidden; user-select:none;
   }
   body {
     display:flex; flex-direction:column;
-    background:
-      radial-gradient(circle at 20% 0%, rgba(0,224,184,0.15), transparent 50%),
-      radial-gradient(circle at 80% 100%, rgba(0,184,255,0.12), transparent 50%),
-      var(--bg);
+    background: radial-gradient(circle at 20% 0%, rgba(0,224,184,0.15), transparent 50%),
+                radial-gradient(circle at 80% 100%, rgba(0,184,255,0.12), transparent 50%),
+                var(--bg);
   }
-
-  /* ===== Header ===== */
   header {
     display:flex; justify-content:space-between; align-items:center;
-    padding:16px 18px;
-    padding-top: calc(16px + env(safe-area-inset-top));
+    padding:16px 18px; padding-top: calc(16px + env(safe-area-inset-top));
   }
   .btn-downloads {
-    background:var(--card);
-    color:var(--text);
-    border:none;
-    padding:10px 16px;
-    border-radius:14px;
-    font-size:14px;
-    font-weight:600;
+    background:var(--card); color:var(--text); border:none;
+    padding:10px 16px; border-radius:14px; font-size:14px; font-weight:600;
     display:flex; align-items:center; gap:8px;
-    cursor:pointer;
-    transition:0.2s;
   }
-  .btn-downloads:active { transform:scale(0.95); }
-
   .user {
     display:flex; align-items:center; gap:10px;
-    background:var(--card);
-    padding:8px 14px;
-    border-radius:14px;
+    background:var(--card); padding:8px 14px; border-radius:14px;
   }
   .user .name { font-size:14px; font-weight:700; color:var(--accent); }
   .socials { display:flex; gap:6px; }
   .socials a {
-    width:26px; height:26px;
-    border-radius:8px;
-    background:var(--card2);
-    display:flex; align-items:center; justify-content:center;
-    text-decoration:none;
-    transition:0.2s;
+    width:26px; height:26px; border-radius:8px; background:var(--card2);
+    display:flex; align-items:center; justify-content:center; text-decoration:none;
   }
-  .socials a:active { transform:scale(0.9); }
   .socials svg { width:14px; height:14px; }
-
-  /* ===== Main ===== */
   main {
-    flex:1;
-    display:flex; flex-direction:column;
-    justify-content:center; align-items:center;
-    padding:0 24px;
-    gap:18px;
+    flex:1; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; padding:0 24px; gap:18px;
   }
-
   .logo {
-    font-size:42px;
-    font-weight:900;
-    letter-spacing:2px;
+    font-size:42px; font-weight:900; letter-spacing:2px;
     background:linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip:text;
-    background-clip:text;
-    -webkit-text-fill-color:transparent;
-    margin-bottom:6px;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   }
-  .subtitle {
-    color:var(--muted);
-    font-size:13px;
-    margin-bottom:24px;
-  }
-
-  .input-wrap {
-    width:100%;
-    position:relative;
-  }
+  .subtitle { color:var(--muted); font-size:13px; margin-bottom:24px; }
+  .input-wrap { width:100%; position:relative; }
   #urlInput {
-    width:100%;
-    background:var(--card);
-    border:1.5px solid transparent;
-    color:var(--text);
-    font-size:14px;
-    padding:16px 54px 16px 16px;
-    border-radius:16px;
-    outline:none;
-    transition:0.2s;
+    width:100%; background:var(--card); border:1.5px solid transparent;
+    color:var(--text); font-size:14px; padding:16px 54px 16px 16px;
+    border-radius:16px; outline:none;
   }
-  #urlInput:focus { border-color:var(--accent); background:var(--card2); }
+  #urlInput:focus { border-color:var(--accent); }
   #urlInput::placeholder { color:var(--muted); }
-
   .paste-btn {
-    position:absolute;
-    left:8px; top:50%;
-    transform:translateY(-50%);
-    background:var(--card2);
-    border:none;
-    color:var(--accent);
-    padding:8px 12px;
-    border-radius:10px;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
+    position:absolute; left:8px; top:50%; transform:translateY(-50%);
+    background:var(--card2); border:none; color:var(--accent);
+    padding:8px 12px; border-radius:10px; font-size:12px; font-weight:600;
   }
-  .paste-btn:active { transform:translateY(-50%) scale(0.9); }
-
   #downloadBtn {
-    width:100%;
-    height:74px;
-    margin-top:6px;
-    border:none;
-    border-radius:20px;
+    width:100%; height:74px; margin-top:6px; border:none; border-radius:20px;
     background:linear-gradient(135deg, var(--accent), var(--accent2));
-    color:#000;
-    font-size:19px;
-    font-weight:800;
-    letter-spacing:0.5px;
-    cursor:pointer;
+    color:#000; font-size:19px; font-weight:800;
     display:flex; align-items:center; justify-content:center; gap:10px;
     box-shadow:0 12px 32px -8px rgba(0,224,184,0.5);
-    transition:0.15s;
   }
-  #downloadBtn:active { transform:scale(0.97); box-shadow:0 6px 20px -6px rgba(0,224,184,0.5); }
-  #downloadBtn:disabled { opacity:0.5; pointer-events:none; }
+  #downloadBtn:active { transform:scale(0.97); }
+  #downloadBtn:disabled { opacity:0.5; }
   #downloadBtn svg { width:24px; height:24px; }
-
-  /* ===== Footer / Format toggle ===== */
-  footer {
-    padding:18px 24px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
-  }
+  footer { padding:18px 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
   .format-toggle {
-    display:flex;
-    background:var(--card);
-    border-radius:16px;
-    padding:5px;
-    gap:5px;
+    display:flex; background:var(--card); border-radius:16px; padding:5px; gap:5px;
   }
   .format-toggle button {
-    flex:1;
-    padding:13px;
-    border:none;
-    background:transparent;
-    color:var(--muted);
-    font-size:14px;
-    font-weight:700;
+    flex:1; padding:13px; border:none; background:transparent;
+    color:var(--muted); font-size:14px; font-weight:700;
     border-radius:12px;
-    cursor:pointer;
-    transition:0.2s;
   }
   .format-toggle button.active {
-    background:linear-gradient(135deg, var(--accent), var(--accent2));
-    color:#000;
+    background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#000;
   }
-
-  /* ===== Progress overlay ===== */
   #progressOverlay {
-    position:fixed; inset:0;
-    background:rgba(5,5,10,0.9);
-    backdrop-filter:blur(20px);
-    display:none;
-    align-items:center; justify-content:center;
-    z-index:100;
-    padding:32px;
+    position:fixed; inset:0; background:rgba(5,5,10,0.9);
+    backdrop-filter:blur(20px); display:none;
+    align-items:center; justify-content:center; z-index:100; padding:32px;
   }
   #progressOverlay.show { display:flex; }
   .progress-card {
-    width:100%;
-    max-width:340px;
-    background:var(--card);
-    border-radius:24px;
-    padding:28px;
-    text-align:center;
+    width:100%; max-width:340px; background:var(--card);
+    border-radius:24px; padding:32px; text-align:center;
   }
-  .progress-ring {
-    width:120px; height:120px;
-    margin:0 auto 20px;
-    position:relative;
+  .spinner {
+    width:70px; height:70px; margin:0 auto 20px;
+    border:5px solid var(--card2); border-top-color:var(--accent);
+    border-radius:50%; animation:spin 1s linear infinite;
   }
-  .progress-ring svg { transform:rotate(-90deg); }
-  .progress-ring .pct {
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:24px; font-weight:800;
-    color:var(--accent);
-  }
+  @keyframes spin { to { transform:rotate(360deg); } }
   .progress-title { font-size:16px; font-weight:700; margin-bottom:6px; }
-  .progress-sub { font-size:12px; color:var(--muted); margin-bottom:20px; min-height:16px;}
-  .btn-cancel {
-    width:100%; padding:13px;
-    border:none; border-radius:12px;
-    background:var(--card2);
-    color:var(--danger);
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-  }
-
-  /* ===== Downloads panel ===== */
+  .progress-sub { font-size:12px; color:var(--muted); }
   #downloadsPanel {
-    position:fixed; inset:0;
-    background:var(--bg);
-    z-index:200;
-    display:none;
+    position:fixed; inset:0; background:var(--bg); z-index:200; display:none;
     flex-direction:column;
     padding-top: calc(16px + env(safe-area-inset-top));
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
@@ -238,77 +117,45 @@
   }
   .panel-head h2 { font-size:20px; }
   .close-btn {
-    background:var(--card);
-    border:none; color:var(--text);
-    width:38px; height:38px;
-    border-radius:12px;
-    font-size:18px;
-    cursor:pointer;
+    background:var(--card); border:none; color:var(--text);
+    width:38px; height:38px; border-radius:12px; font-size:18px;
   }
   #downloadsList {
-    flex:1; overflow-y:auto;
-    padding:0 18px 18px;
+    flex:1; overflow-y:auto; padding:0 18px 18px;
     display:flex; flex-direction:column; gap:10px;
   }
-  .empty {
-    color:var(--muted);
-    text-align:center;
-    padding:60px 20px;
-    font-size:14px;
-  }
+  .empty { color:var(--muted); text-align:center; padding:60px 20px; font-size:14px; }
   .file-item {
-    background:var(--card);
-    border-radius:16px;
-    padding:14px;
+    background:var(--card); border-radius:16px; padding:14px;
     display:flex; align-items:center; gap:12px;
   }
   .file-icon {
-    width:44px; height:44px;
-    border-radius:12px;
+    width:44px; height:44px; border-radius:12px;
     background:linear-gradient(135deg, var(--accent), var(--accent2));
     display:flex; align-items:center; justify-content:center;
-    font-size:20px;
-    flex-shrink:0;
+    font-size:20px; flex-shrink:0;
   }
   .file-info { flex:1; min-width:0; }
   .file-name {
-    font-size:13px; font-weight:600;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    margin-bottom:4px;
+    font-size:13px; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;
   }
   .file-meta { font-size:11px; color:var(--muted); }
   .file-actions { display:flex; gap:6px; }
   .file-actions button {
-    width:38px; height:38px;
-    border:none; border-radius:10px;
-    background:var(--card2);
-    color:var(--text);
-    font-size:16px;
-    cursor:pointer;
+    width:38px; height:38px; border:none; border-radius:10px;
+    background:var(--card2); color:var(--text); font-size:16px;
   }
   .file-actions button.delete { color:var(--danger); }
-
-  /* ===== Toast ===== */
   #toast {
-    position:fixed;
-    bottom:110px; left:50%;
+    position:fixed; bottom:110px; left:50%;
     transform:translateX(-50%) translateY(20px);
-    background:var(--card2);
-    color:var(--text);
-    padding:12px 20px;
-    border-radius:14px;
-    font-size:13px;
-    font-weight:600;
-    opacity:0;
-    transition:0.3s;
-    z-index:500;
-    pointer-events:none;
-    max-width:90%;
-    text-align:center;
-    border:1px solid rgba(0,224,184,0.3);
+    background:var(--card2); color:var(--text);
+    padding:12px 20px; border-radius:14px; font-size:13px; font-weight:600;
+    opacity:0; transition:0.3s; z-index:500; pointer-events:none;
+    max-width:90%; text-align:center; border:1px solid rgba(0,224,184,0.3);
   }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
   ::-webkit-scrollbar { display:none; }
 </style>
 </head>
@@ -335,7 +182,7 @@
 </header>
 
 <main>
-  <div class="logo">M7U</div>
+  <div class="logo">app m7u-h</div>
   <div class="subtitle">حمّل من يوتيوب • تيك توك • انستكرام</div>
 
   <div class="input-wrap">
@@ -360,30 +207,14 @@
   </div>
 </footer>
 
-<!-- Progress overlay -->
 <div id="progressOverlay">
   <div class="progress-card">
-    <div class="progress-ring">
-      <svg width="120" height="120">
-        <circle cx="60" cy="60" r="52" stroke="#25253a" stroke-width="8" fill="none"/>
-        <circle id="ringFill" cx="60" cy="60" r="52" stroke="url(#grad)" stroke-width="8" fill="none"
-                stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00e0b8"/>
-            <stop offset="100%" stop-color="#00b8ff"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <div class="pct" id="pctText">0%</div>
-    </div>
-    <div class="progress-title" id="progTitle">جاري التحميل...</div>
+    <div class="spinner"></div>
+    <div class="progress-title">جاري التحميل...</div>
     <div class="progress-sub" id="progSub">الرجاء الانتظار</div>
-    <button class="btn-cancel" onclick="hideProgress()">إخفاء</button>
   </div>
 </div>
 
-<!-- Downloads panel -->
 <div id="downloadsPanel">
   <div class="panel-head">
     <h2>📥 التنزيلات</h2>
@@ -404,31 +235,24 @@
   }
 
   function pasteUrl() {
-    // WebView ما يدعم navigator.clipboard دائماً، نستخدم تقنية قديمة
     const input = document.getElementById('urlInput');
     input.focus();
-    // في WebView نستعمل الأمر التالي
     try {
       if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(t => {
           if (t) { input.value = t; showToast('تم اللصق ✓'); }
           else showToast('الحافظة فارغة');
-        }).catch(() => {
-          document.execCommand('paste');
-        });
+        }).catch(() => document.execCommand('paste'));
       } else {
         document.execCommand('paste');
       }
-    } catch(e) {
-      document.execCommand('paste');
-    }
+    } catch(e) { document.execCommand('paste'); }
   }
 
   function startDownload() {
     const url = document.getElementById('urlInput').value.trim();
     if (!url) { showToast('الصق الرابط أولاً'); return; }
     if (!/^https?:\/\//i.test(url)) { showToast('الرابط غير صحيح'); return; }
-
     document.getElementById('downloadBtn').disabled = true;
     showProgress();
     Android.download(url, currentFormat);
@@ -436,36 +260,20 @@
 
   function showProgress() {
     document.getElementById('progressOverlay').classList.add('show');
-    document.getElementById('ringFill').style.strokeDashoffset = 326.7;
-    document.getElementById('pctText').textContent = '0%';
-    document.getElementById('progTitle').textContent = 'جاري التحميل...';
-    document.getElementById('progSub').textContent = 'الرجاء الانتظار';
+    document.getElementById('progSub').textContent = 'الرجاء الانتظار...';
   }
   function hideProgress() {
     document.getElementById('progressOverlay').classList.remove('show');
     document.getElementById('downloadBtn').disabled = false;
   }
 
-  // ===== Callbacks من Java =====
-  window.onProgress = function(pct, eta) {
-    pct = Math.max(0, Math.min(100, pct || 0));
-    const offset = 326.7 - (326.7 * pct / 100);
-    document.getElementById('ringFill').style.strokeDashoffset = offset;
-    document.getElementById('pctText').textContent = Math.round(pct) + '%';
-    if (eta && eta > 0) {
-      document.getElementById('progSub').textContent = 'الوقت المتبقي: ' + eta + ' ثانية';
-    } else {
-      document.getElementById('progSub').textContent = 'جاري المعالجة...';
-    }
-  };
+  window.onProgress = function() {};
 
   window.onComplete = function(name) {
-    document.getElementById('pctText').textContent = '✓';
-    document.getElementById('progTitle').textContent = 'تم التحميل بنجاح';
-    document.getElementById('progSub').textContent = name || '';
+    document.getElementById('progSub').textContent = '✓ تم الحفظ: ' + name;
     document.getElementById('downloadBtn').disabled = false;
-    showToast('✓ تم حفظ الملف');
-    setTimeout(hideProgress, 1400);
+    showToast('✓ تم التحميل بنجاح');
+    setTimeout(hideProgress, 1500);
   };
 
   window.onError = function(msg) {
@@ -474,7 +282,6 @@
     showToast('✕ ' + msg);
   };
 
-  // ===== Downloads panel =====
   function openDownloads() {
     renderDownloads();
     document.getElementById('downloadsPanel').classList.add('show');
@@ -486,7 +293,6 @@
     let list = [];
     try { list = JSON.parse(Android.getDownloads()); } catch(e) {}
     list.sort((a,b) => b.date - a.date);
-
     const c = document.getElementById('downloadsList');
     if (list.length === 0) {
       c.innerHTML = '<div class="empty">ماكو ملفات محمّلة بعد</div>';
@@ -516,7 +322,6 @@
     setTimeout(renderDownloads, 200);
   }
 
-  // ===== Toast =====
   let toastTimer;
   function showToast(msg) {
     const t = document.getElementById('toast');
