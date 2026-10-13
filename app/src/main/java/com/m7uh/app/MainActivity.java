@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -60,7 +61,32 @@ public class MainActivity extends AppCompatActivity {
         s.setAllowContentAccess(true);
         s.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        // ====== WebViewClient مخصص لفتح روابط التطبيقات الخارجية ======
+        webView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                return handleUrl(view, url);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleUrl(view, url);
+            }
+
+            private boolean handleUrl(WebView view, String url) {
+                // روابط الويب العادية تفتح داخل التطبيق
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    view.loadUrl(url);
+                    return false;
+                }
+
+                // روابط التطبيقات مثل: snssdk1233://, snapchat://, tg://, instagram:// ...
+                return openExternalApp(url);
+            }
+        });
+
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new Bridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
@@ -74,6 +100,23 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> toast("خطأ: " + e.getMessage()));
             }
         });
+    }
+
+    /**
+     * يحاول يفتح الرابط بتطبيق خارجي.
+     * إذا التطبيق مو منزل، يرجع false ويكمل التحميل داخل الـ WebView.
+     */
+    private boolean openExternalApp(String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return true;
+        } catch (Exception e) {
+            // ما لقى تطبيق يفتح الرابط
+            toast("التطبيق غير منزل على جهازك");
+            return true;
+        }
     }
 
     private void toast(String msg) {
@@ -113,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                             videoUrl = data.getString("music");
                             ext = ".mp3";
                         } else {
-                            // نجرب HD أولاً، وإذا مو موجود نرجع للعادي
                             String hd = data.optString("hdplay", "");
                             if (hd != null && !hd.isEmpty() && !hd.equals("null")) {
                                 videoUrl = hd;
@@ -123,10 +165,8 @@ public class MainActivity extends AppCompatActivity {
                             ext = ".mp4";
                         }
 
-                        // === الحل: تنظيف الاسم ثم إضافة الامتداد ===
                         String baseTitle = data.optString("title", "tiktok_video");
                         baseTitle = baseTitle.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF _-]", "_").trim();
-                        // نُبقي مساحة للامتداد
                         if (baseTitle.length() > 70) baseTitle = baseTitle.substring(0, 70);
                         if (baseTitle.isEmpty()) baseTitle = "tiktok_" + System.currentTimeMillis();
 
@@ -345,4 +385,4 @@ public class MainActivity extends AppCompatActivity {
         if (webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
     }
-}
+                                                 }
