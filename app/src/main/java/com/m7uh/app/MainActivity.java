@@ -56,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
             try {
                 YoutubeDL.getInstance().init(getApplication());
                 FFmpeg.getInstance().init(getApplication());
+                // تحديث yt-dlp تلقائياً لآخر نسخة
+                try {
+                    YoutubeDL.getInstance().updateYoutubeDL(getApplication());
+                } catch (Exception ignored) {}
                 runOnUiThread(() -> toast("✓ جاهز للتحميل"));
             } catch (Exception e) {
                 runOnUiThread(() -> toast("خطأ: " + e.getMessage()));
@@ -91,12 +95,10 @@ public class MainActivity extends AppCompatActivity {
                         request.addOption("--audio-format", "mp3");
                         request.addOption("--audio-quality", "0");
                     } else {
-                        request.addOption("-f",
-                            "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best");
+                        request.addOption("-f", "bv*+ba/b");
                         request.addOption("--merge-output-format", "mp4");
                     }
 
-                    // بسيط بدون callback - يشتغل مع أي نسخة
                     YoutubeDL.getInstance().execute(request);
 
                     File latest = getLatestFile();
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 String name = f.getName().replace("\\", "\\\\").replace("\"", "\\\"");
                 sb.append("{\"name\":\"").append(name)
                   .append("\",\"size\":").append(f.length())
-                  .append("\",\"path\":\"").append(f.getAbsolutePath().replace("\"", "\\\""))
+                  .append(",\"path\":\"").append(f.getAbsolutePath().replace("\"", "\\\""))
                   .append("\",\"date\":").append(f.lastModified()).append("}");
             }
             sb.append("]");
