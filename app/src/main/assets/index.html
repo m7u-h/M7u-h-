@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ckb" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -163,7 +163,7 @@
 
 <header>
   <button class="btn-downloads" onclick="openDownloads()">
-    <span>📥</span> التنزيلات
+    <span>📥</span> داگرتنەکان
   </button>
   <div class="user">
     <span class="name">@m7u_h</span>
@@ -183,11 +183,11 @@
 
 <main>
   <div class="logo">app m7u-h</div>
-  <div class="subtitle">حمّل من يوتيوب • تيك توك • انستكرام</div>
+  <div class="subtitle">تەنها داگرتن لە تیکتۆک</div>
 
   <div class="input-wrap">
-    <input id="urlInput" type="text" placeholder="الصق رابط الفيديو هنا...">
-    <button class="paste-btn" onclick="pasteUrl()">📋 لصق</button>
+    <input id="urlInput" type="text" placeholder="لینکی ڤیدیۆی تیکتۆک لێرە بلکێنە...">
+    <button class="paste-btn" onclick="pasteUrl()">📋 بلکێنە</button>
   </div>
 
   <button id="downloadBtn" onclick="startDownload()">
@@ -196,28 +196,28 @@
       <polyline points="7 10 12 15 17 10"/>
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
-    تحميل
+    داگرتن
   </button>
 </main>
 
 <footer>
   <div class="format-toggle">
-    <button data-format="mp4" class="active" onclick="selectFormat(this)">🎬 فيديو MP4</button>
-    <button data-format="mp3" onclick="selectFormat(this)">🎵 صوت MP3</button>
+    <button data-format="mp4" class="active" onclick="selectFormat(this)">🎬 ڤیدیۆ MP4</button>
+    <button data-format="mp3" onclick="selectFormat(this)">🎵 دەنگ MP3</button>
   </div>
 </footer>
 
 <div id="progressOverlay">
   <div class="progress-card">
     <div class="spinner"></div>
-    <div class="progress-title">جاري التحميل...</div>
-    <div class="progress-sub" id="progSub">الرجاء الانتظار</div>
+    <div class="progress-title">لە داگرتندایە...</div>
+    <div class="progress-sub" id="progSub">تکایە چاوەڕوان بە</div>
   </div>
 </div>
 
 <div id="downloadsPanel">
   <div class="panel-head">
-    <h2>📥 التنزيلات</h2>
+    <h2>📥 داگرتنەکان</h2>
     <button class="close-btn" onclick="closeDownloads()">✕</button>
   </div>
   <div id="downloadsList"></div>
@@ -240,8 +240,8 @@
     try {
       if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(t => {
-          if (t) { input.value = t; showToast('تم اللصق ✓'); }
-          else showToast('الحافظة فارغة');
+          if (t) { input.value = t; showToast('بلکێنرا ✓'); }
+          else showToast('کلیپبۆرد بەتاڵە');
         }).catch(() => document.execCommand('paste'));
       } else {
         document.execCommand('paste');
@@ -251,8 +251,10 @@
 
   function startDownload() {
     const url = document.getElementById('urlInput').value.trim();
-    if (!url) { showToast('الصق الرابط أولاً'); return; }
-    if (!/^https?:\/\//i.test(url)) { showToast('الرابط غير صحيح'); return; }
+    if (!url) { showToast('سەرەتا لینک بلکێنە'); return; }
+    if (!/^https?:\/\//i.test(url)) { showToast('لینکەکە دروست نییە'); return; }
+    if (!/tiktok\.com/i.test(url)) { showToast('تەنها لینکی تیکتۆک قبوڵ دەکرێت'); return; }
+
     document.getElementById('downloadBtn').disabled = true;
     showProgress();
     Android.download(url, currentFormat);
@@ -260,8 +262,9 @@
 
   function showProgress() {
     document.getElementById('progressOverlay').classList.add('show');
-    document.getElementById('progSub').textContent = 'الرجاء الانتظار...';
+    document.getElementById('progSub').textContent = 'تکایە چاوەڕوان بە...';
   }
+
   function hideProgress() {
     document.getElementById('progressOverlay').classList.remove('show');
     document.getElementById('downloadBtn').disabled = false;
@@ -270,9 +273,9 @@
   window.onProgress = function() {};
 
   window.onComplete = function(name) {
-    document.getElementById('progSub').textContent = '✓ تم الحفظ: ' + name;
+    document.getElementById('progSub').textContent = '✓ پاشەکەوت کرا: ' + name;
     document.getElementById('downloadBtn').disabled = false;
-    showToast('✓ تم التحميل بنجاح');
+    showToast('✓ بە سەرکەوتوویی داگرت');
     setTimeout(hideProgress, 1500);
   };
 
@@ -286,23 +289,28 @@
     renderDownloads();
     document.getElementById('downloadsPanel').classList.add('show');
   }
+
   function closeDownloads() {
     document.getElementById('downloadsPanel').classList.remove('show');
   }
+
   function renderDownloads() {
     let list = [];
     try { list = JSON.parse(Android.getDownloads()); } catch(e) {}
     list.sort((a,b) => b.date - a.date);
     const c = document.getElementById('downloadsList');
+
     if (list.length === 0) {
-      c.innerHTML = '<div class="empty">ماكو ملفات محمّلة بعد</div>';
+      c.innerHTML = '<div class="empty">هێشتا هیچ فایلێکی داگرتە نییە</div>';
       return;
     }
+
     c.innerHTML = list.map(f => {
       const isAudio = f.name.toLowerCase().endsWith('.mp3');
       const sizeMB = (f.size / 1048576).toFixed(2);
       const nameEsc = f.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const pathEsc = f.path.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
       return `
         <div class="file-item">
           <div class="file-icon">${isAudio ? '🎵' : '🎬'}</div>
@@ -317,6 +325,7 @@
         </div>`;
     }).join('');
   }
+
   function delFile(path) {
     Android.deleteFile(path);
     setTimeout(renderDownloads, 200);
