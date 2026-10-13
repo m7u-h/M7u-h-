@@ -32,6 +32,6 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.github.yausername.youtubedl-android:library:0.17.2'
-    implementation 'com.github.yausername.youtubedl-android:ffmpeg:0.17.2'
+    implementation 'com.github.yausername.youtubedl-android:library:0.15.0'
+    implementation 'com.github.yausername.youtubedl-android:ffmpeg:0.15.0'
 }
