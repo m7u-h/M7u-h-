@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     File downloadedFile;
 
                     if (cleanUrl.contains("tiktok.com")) {
-                        String apiUrl = "https://www.tikwm.com/api/?url=" + cleanUrl;
+                        String apiUrl = "https://www.tikwm.com/api/?hd=1&url=" + cleanUrl;
                         String jsonResponse = httpGet(apiUrl);
                         JSONObject json = new JSONObject(jsonResponse);
 
@@ -107,21 +107,31 @@ public class MainActivity extends AppCompatActivity {
 
                         JSONObject data = json.getJSONObject("data");
                         String videoUrl;
-                        String title;
+                        String ext;
 
                         if ("mp3".equals(format)) {
                             videoUrl = data.getString("music");
-                            title = data.getString("title") + ".mp3";
+                            ext = ".mp3";
                         } else {
-                            videoUrl = data.getString("play");
-                            title = data.getString("title") + ".mp4";
+                            // نجرب HD أولاً، وإذا مو موجود نرجع للعادي
+                            String hd = data.optString("hdplay", "");
+                            if (hd != null && !hd.isEmpty() && !hd.equals("null")) {
+                                videoUrl = hd;
+                            } else {
+                                videoUrl = data.getString("play");
+                            }
+                            ext = ".mp4";
                         }
 
-                        title = title.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF. _-]", "_").trim();
-                        if (title.length() > 80) title = title.substring(0, 80);
-                        if (title.isEmpty()) title = "tiktok_" + System.currentTimeMillis();
+                        // === الحل: تنظيف الاسم ثم إضافة الامتداد ===
+                        String baseTitle = data.optString("title", "tiktok_video");
+                        baseTitle = baseTitle.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF _-]", "_").trim();
+                        // نُبقي مساحة للامتداد
+                        if (baseTitle.length() > 70) baseTitle = baseTitle.substring(0, 70);
+                        if (baseTitle.isEmpty()) baseTitle = "tiktok_" + System.currentTimeMillis();
 
-                        File tempFile = new File(downloadDir, title);
+                        String finalName = baseTitle + ext;
+                        File tempFile = new File(downloadDir, finalName);
                         downloadFile(videoUrl, tempFile);
                         downloadedFile = tempFile;
 
@@ -156,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
                         throw new Exception("ما تم تنزيل الملف");
                     }
 
-                    // نسخ الملف إلى مجلد التنزيلات العام ليكون مرئي بمدير الملفات
                     try {
                         publishToPublicDownloads(downloadedFile);
                     } catch (Exception ignored) {}
@@ -216,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
                 i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(i);
             } catch (Exception e) {
-                // إذا ما فتح، نجرب نشارك
                 try {
                     File f = new File(path);
                     Uri uri = FileProvider.getUriForFile(
@@ -235,7 +243,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // ===== نسخ الملف إلى Downloads العام =====
     private void publishToPublicDownloads(File source) throws Exception {
         String fileName = source.getName();
         String mime = getMimeType(fileName);
