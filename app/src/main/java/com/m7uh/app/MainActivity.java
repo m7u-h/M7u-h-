@@ -96,9 +96,8 @@ public class MainActivity extends AppCompatActivity {
                         request.addOption("--merge-output-format", "mp4");
                     }
 
-                    YoutubeDL.getInstance().execute(request, (progress, etaInSeconds) -> {
-                        callJs("window.onProgress(" + progress + "," + etaInSeconds + ");");
-                    });
+                    // بسيط بدون callback - يشتغل مع أي نسخة
+                    YoutubeDL.getInstance().execute(request);
 
                     File latest = getLatestFile();
                     String name = latest != null ? latest.getName() : "الملف";
@@ -125,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 String name = f.getName().replace("\\", "\\\\").replace("\"", "\\\"");
                 sb.append("{\"name\":\"").append(name)
                   .append("\",\"size\":").append(f.length())
-                  .append(",\"path\":\"").append(f.getAbsolutePath().replace("\"", "\\\""))
+                  .append("\",\"path\":\"").append(f.getAbsolutePath().replace("\"", "\\\""))
                   .append("\",\"date\":").append(f.lastModified()).append("}");
             }
             sb.append("]");
