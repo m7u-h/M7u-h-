@@ -56,9 +56,6 @@ public class MainActivity extends AppCompatActivity {
             try {
                 YoutubeDL.getInstance().init(getApplication());
                 FFmpeg.getInstance().init(getApplication());
-                try {
-                    YoutubeDL.getInstance().updateYoutubeDL(getApplication());
-                } catch (Exception ignored) {}
                 runOnUiThread(() -> toast("✓ جاهز للتحميل"));
             } catch (Exception e) {
                 runOnUiThread(() -> toast("خطأ: " + e.getMessage()));
@@ -93,9 +90,7 @@ public class MainActivity extends AppCompatActivity {
                     request.addOption("--user-agent",
                         "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
 
-                    // إعدادات خاصة لكل موقع
                     if (cleanUrl.contains("tiktok.com")) {
-                        // TikTok: extractor args جديدة
                         request.addOption("--extractor-args",
                             "tiktok:api_hostname=api22-normal-c-useast2a.tiktokv.com");
                         request.addOption("--referer", "https://www.tiktok.com/");
