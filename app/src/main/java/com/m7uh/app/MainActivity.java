@@ -19,7 +19,15 @@ import com.yausername.ffmpeg.FFmpeg;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -81,39 +89,66 @@ public class MainActivity extends AppCompatActivity {
             executor.execute(() -> {
                 try {
                     String cleanUrl = url.trim();
-                    YoutubeDLRequest request = new YoutubeDLRequest(cleanUrl);
-                    request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title).80s.%(ext)s");
-                    request.addOption("--no-playlist");
-                    request.addOption("--restrict-filenames");
-                    request.addOption("--no-warnings");
-                    request.addOption("--no-check-certificates");
-                    request.addOption("--user-agent",
-                        "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+                    File outFile;
 
                     if (cleanUrl.contains("tiktok.com")) {
-                        request.addOption("--extractor-args",
-                            "tiktok:api_hostname=api22-normal-c-useast2a.tiktokv.com");
-                        request.addOption("--referer", "https://www.tiktok.com/");
-                    } else if (cleanUrl.contains("instagram.com")) {
-                        request.addOption("--referer", "https://www.instagram.com/");
-                    } else if (cleanUrl.contains("youtube.com") || cleanUrl.contains("youtu.be")) {
-                        request.addOption("--extractor-args",
-                            "youtube:player_client=android,web");
-                    }
+                        // === تيك توك: استخدام خادم TikWM API ===
+                        String apiUrl = "https://www.tikwm.com/api/?url=" + cleanUrl;
+                        String jsonResponse = httpGet(apiUrl);
 
-                    if ("mp3".equals(format)) {
-                        request.addOption("-x");
-                        request.addOption("--audio-format", "mp3");
-                        request.addOption("--audio-quality", "0");
+                        JSONObject json = new JSONObject(jsonResponse);
+                        if (json.getInt("code") != 0) {
+                            throw new Exception("فشل جلب الفيديو: " + json.optString("msg"));
+                        }
+
+                        JSONObject data = json.getJSONObject("data");
+                        String videoUrl;
+                        String title;
+
+                        if ("mp3".equals(format)) {
+                            videoUrl = data.getString("music");
+                            title = data.getString("title") + ".mp3";
+                        } else {
+                            videoUrl = data.getString("play"); // MP4 بدون علامة مائية
+                            title = data.getString("title") + ".mp4";
+                        }
+
+                        title = title.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF. ]", "_");
+                        if (title.length() > 80) title = title.substring(0, 80);
+                        if (title.trim().isEmpty()) title = "tiktok_" + System.currentTimeMillis() + ("mp3".equals(format) ? ".mp3" : ".mp4");
+
+                        outFile = new File(downloadDir, title);
+                        downloadFile(videoUrl, outFile);
+
                     } else {
-                        request.addOption("-f", "bv*+ba/b");
-                        request.addOption("--merge-output-format", "mp4");
+                        // === يوتيوب + إنستكرام: استخدام yt-dlp ===
+                        YoutubeDLRequest request = new YoutubeDLRequest(cleanUrl);
+                        request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title).80s.%(ext)s");
+                        request.addOption("--no-playlist");
+                        request.addOption("--restrict-filenames");
+                        request.addOption("--no-warnings");
+                        request.addOption("--no-check-certificates");
+
+                        if (cleanUrl.contains("instagram.com")) {
+                            request.addOption("--referer", "https://www.instagram.com/");
+                        } else if (cleanUrl.contains("youtube.com") || cleanUrl.contains("youtu.be")) {
+                            request.addOption("--extractor-args", "youtube:player_client=android,web");
+                        }
+
+                        if ("mp3".equals(format)) {
+                            request.addOption("-x");
+                            request.addOption("--audio-format", "mp3");
+                            request.addOption("--audio-quality", "0");
+                        } else {
+                            request.addOption("-f", "bv*+ba/b");
+                            request.addOption("--merge-output-format", "mp4");
+                        }
+
+                        YoutubeDL.getInstance().execute(request);
+                        outFile = getLatestFile();
                     }
 
-                    YoutubeDL.getInstance().execute(request);
-
-                    File latest = getLatestFile();
-                    String name = latest != null ? latest.getName() : "الملف";
+                    String name = outFile != null ? outFile.getName() : "الملف";
                     callJs("window.onComplete('" + name.replace("'", "") + "');");
 
                 } catch (Exception e) {
@@ -171,6 +206,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // === دوال مساعدة ===
+
+    private String httpGet(String urlStr) throws Exception {
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("User-Agent",
+            "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+        conn.setConnectTimeout(20000);
+        conn.setReadTimeout(20000);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+        return response.toString();
+    }
+
+    private void downloadFile(String fileUrl, File outFile) throws Exception {
+        URL url = new URL(fileUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("User-Agent",
+            "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+        conn.setConnectTimeout(20000);
+        conn.setReadTimeout(20000);
+
+        try (InputStream in = conn.getInputStream();
+             FileOutputStream out = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
     private File getLatestFile() {
         File[] files = downloadDir.listFiles();
         if (files == null || files.length == 0) return null;
@@ -186,4 +260,4 @@ public class MainActivity extends AppCompatActivity {
         if (webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
     }
-}
+    }
