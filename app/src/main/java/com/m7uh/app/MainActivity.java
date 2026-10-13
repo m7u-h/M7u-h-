@@ -52,14 +52,13 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new Bridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
 
-        // تهيئة yt-dlp + ffmpeg بمؤشر خلفي
         executor.execute(() -> {
             try {
                 YoutubeDL.getInstance().init(getApplication());
                 FFmpeg.getInstance().init(getApplication());
                 runOnUiThread(() -> toast("✓ جاهز للتحميل"));
             } catch (Exception e) {
-                runOnUiThread(() -> toast("خطأ بالتهيئة: " + e.getMessage()));
+                runOnUiThread(() -> toast("خطأ: " + e.getMessage()));
             }
         });
     }
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class Bridge {
-
         @JavascriptInterface
         public void download(final String url, final String format) {
             if (url == null || url.trim().isEmpty()) {
@@ -85,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
                     YoutubeDLRequest request = new YoutubeDLRequest(url.trim());
                     request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title).80s.%(ext)s");
                     request.addOption("--no-playlist");
-                    request.addOption("--no-mtime");
                     request.addOption("--restrict-filenames");
+                    request.addOption("--no-warnings");
 
                     if ("mp3".equals(format)) {
                         request.addOption("-x");
@@ -94,18 +92,14 @@ public class MainActivity extends AppCompatActivity {
                         request.addOption("--audio-quality", "0");
                     } else {
                         request.addOption("-f",
-                                "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best");
+                            "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best");
                         request.addOption("--merge-output-format", "mp4");
                     }
 
-                    // TikTok / Instagram بدون علامة مائية (yt-dlp يسويه تلقائياً)
-                    request.addOption("--no-warnings");
-
-                    YoutubeDL.getInstance().execute(request, (progress, etaInSeconds, line) -> {
+                    YoutubeDL.getInstance().execute(request, (progress, etaInSeconds) -> {
                         callJs("window.onProgress(" + progress + "," + etaInSeconds + ");");
                     });
 
-                    // نجاح
                     File latest = getLatestFile();
                     String name = latest != null ? latest.getName() : "الملف";
                     callJs("window.onComplete('" + name.replace("'", "") + "');");
@@ -151,9 +145,9 @@ public class MainActivity extends AppCompatActivity {
             try {
                 File f = new File(path);
                 Uri uri = FileProvider.getUriForFile(
-                        MainActivity.this,
-                        getPackageName() + ".fileprovider",
-                        f);
+                    MainActivity.this,
+                    getPackageName() + ".fileprovider",
+                    f);
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(uri, "*/*");
                 i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -161,11 +155,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 toast("ماكو تطبيق يفتح هذا الملف");
             }
-        }
-
-        @JavascriptInterface
-        public void toastMsg(String msg) {
-            toast(msg);
         }
     }
 
