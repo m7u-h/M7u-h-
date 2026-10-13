@@ -1,10 +1,13 @@
 package com.m7u.downloader;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -23,9 +26,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -89,15 +94,14 @@ public class MainActivity extends AppCompatActivity {
             executor.execute(() -> {
                 try {
                     String cleanUrl = url.trim();
-                    File outFile;
+                    File downloadedFile;
 
                     if (cleanUrl.contains("tiktok.com")) {
-                        // === تيك توك: استخدام خادم TikWM API ===
                         String apiUrl = "https://www.tikwm.com/api/?url=" + cleanUrl;
                         String jsonResponse = httpGet(apiUrl);
-
                         JSONObject json = new JSONObject(jsonResponse);
-                        if (json.getInt("code") != 0) {
+
+                        if (json.optInt("code", -1) != 0) {
                             throw new Exception("فشل جلب الفيديو: " + json.optString("msg"));
                         }
 
@@ -109,19 +113,19 @@ public class MainActivity extends AppCompatActivity {
                             videoUrl = data.getString("music");
                             title = data.getString("title") + ".mp3";
                         } else {
-                            videoUrl = data.getString("play"); // MP4 بدون علامة مائية
+                            videoUrl = data.getString("play");
                             title = data.getString("title") + ".mp4";
                         }
 
-                        title = title.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF. ]", "_");
+                        title = title.replaceAll("[^a-zA-Z0-9\\u0600-\\u06FF. _-]", "_").trim();
                         if (title.length() > 80) title = title.substring(0, 80);
-                        if (title.trim().isEmpty()) title = "tiktok_" + System.currentTimeMillis() + ("mp3".equals(format) ? ".mp3" : ".mp4");
+                        if (title.isEmpty()) title = "tiktok_" + System.currentTimeMillis();
 
-                        outFile = new File(downloadDir, title);
-                        downloadFile(videoUrl, outFile);
+                        File tempFile = new File(downloadDir, title);
+                        downloadFile(videoUrl, tempFile);
+                        downloadedFile = tempFile;
 
                     } else {
-                        // === يوتيوب + إنستكرام: استخدام yt-dlp ===
                         YoutubeDLRequest request = new YoutubeDLRequest(cleanUrl);
                         request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title).80s.%(ext)s");
                         request.addOption("--no-playlist");
@@ -145,10 +149,19 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         YoutubeDL.getInstance().execute(request);
-                        outFile = getLatestFile();
+                        downloadedFile = getLatestFile();
                     }
 
-                    String name = outFile != null ? outFile.getName() : "الملف";
+                    if (downloadedFile == null || !downloadedFile.exists()) {
+                        throw new Exception("ما تم تنزيل الملف");
+                    }
+
+                    // نسخ الملف إلى مجلد التنزيلات العام ليكون مرئي بمدير الملفات
+                    try {
+                        publishToPublicDownloads(downloadedFile);
+                    } catch (Exception ignored) {}
+
+                    String name = downloadedFile.getName();
                     callJs("window.onComplete('" + name.replace("'", "") + "');");
 
                 } catch (Exception e) {
@@ -168,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
             boolean first = true;
             for (File f : files) {
                 if (f.isDirectory()) continue;
+                if (f.getName().endsWith(".part")) continue;
                 if (!first) sb.append(",");
                 first = false;
                 String name = f.getName().replace("\\", "\\\\").replace("\"", "\\\"");
@@ -192,21 +206,84 @@ public class MainActivity extends AppCompatActivity {
         public void openFile(String path) {
             try {
                 File f = new File(path);
+                String mime = getMimeType(f.getName());
                 Uri uri = FileProvider.getUriForFile(
                     MainActivity.this,
                     getPackageName() + ".fileprovider",
                     f);
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setDataAndType(uri, "*/*");
+                i.setDataAndType(uri, mime);
                 i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(i);
             } catch (Exception e) {
-                toast("ماكو تطبيق يفتح هذا الملف");
+                // إذا ما فتح، نجرب نشارك
+                try {
+                    File f = new File(path);
+                    Uri uri = FileProvider.getUriForFile(
+                        MainActivity.this,
+                        getPackageName() + ".fileprovider",
+                        f);
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType(getMimeType(f.getName()));
+                    share.putExtra(Intent.EXTRA_STREAM, uri);
+                    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(share, "فتح باستخدام"));
+                } catch (Exception e2) {
+                    toast("ماكو تطبيق يفتح هذا الملف");
+                }
             }
         }
     }
 
-    // === دوال مساعدة ===
+    // ===== نسخ الملف إلى Downloads العام =====
+    private void publishToPublicDownloads(File source) throws Exception {
+        String fileName = source.getName();
+        String mime = getMimeType(fileName);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, mime);
+            values.put(MediaStore.Downloads.RELATIVE_PATH,
+                Environment.DIRECTORY_DOWNLOADS + "/M7U");
+
+            Uri uri = getContentResolver().insert(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri == null) return;
+
+            try (OutputStream out = getContentResolver().openOutputStream(uri);
+                 FileInputStream in = new FileInputStream(source)) {
+                if (out == null) return;
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+            }
+        } else {
+            File downloads = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+            File m7uDir = new File(downloads, "M7U");
+            if (!m7uDir.exists()) m7uDir.mkdirs();
+            File target = new File(m7uDir, fileName);
+
+            try (FileOutputStream out = new FileOutputStream(target);
+                 FileInputStream in = new FileInputStream(source)) {
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+            }
+        }
+    }
+
+    private String getMimeType(String fileName) {
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".mp4")) return "video/mp4";
+        if (lower.endsWith(".mp3")) return "audio/mpeg";
+        if (lower.endsWith(".m4a")) return "audio/mp4";
+        if (lower.endsWith(".webm")) return "video/webm";
+        if (lower.endsWith(".mkv")) return "video/x-matroska";
+        if (lower.endsWith(".aac")) return "audio/aac";
+        return "application/octet-stream";
+    }
 
     private String httpGet(String urlStr) throws Exception {
         URL url = new URL(urlStr);
@@ -220,9 +297,7 @@ public class MainActivity extends AppCompatActivity {
         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder response = new StringBuilder();
         String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
+        while ((line = reader.readLine()) != null) response.append(line);
         reader.close();
         return response.toString();
     }
@@ -248,9 +323,12 @@ public class MainActivity extends AppCompatActivity {
     private File getLatestFile() {
         File[] files = downloadDir.listFiles();
         if (files == null || files.length == 0) return null;
-        File latest = files[0];
+        File latest = null;
         for (File f : files) {
-            if (f.lastModified() > latest.lastModified()) latest = f;
+            if (f.isDirectory()) continue;
+            if (f.getName().endsWith(".part")) continue;
+            if (f.getName().endsWith(".ytdl")) continue;
+            if (latest == null || f.lastModified() > latest.lastModified()) latest = f;
         }
         return latest;
     }
@@ -260,4 +338,4 @@ public class MainActivity extends AppCompatActivity {
         if (webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
     }
-    }
+}
