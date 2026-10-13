@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
             try {
                 YoutubeDL.getInstance().init(getApplication());
                 FFmpeg.getInstance().init(getApplication());
-                // تحديث yt-dlp تلقائياً لآخر نسخة
                 try {
                     YoutubeDL.getInstance().updateYoutubeDL(getApplication());
                 } catch (Exception ignored) {}
@@ -84,11 +83,28 @@ public class MainActivity extends AppCompatActivity {
             }
             executor.execute(() -> {
                 try {
-                    YoutubeDLRequest request = new YoutubeDLRequest(url.trim());
+                    String cleanUrl = url.trim();
+                    YoutubeDLRequest request = new YoutubeDLRequest(cleanUrl);
                     request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title).80s.%(ext)s");
                     request.addOption("--no-playlist");
                     request.addOption("--restrict-filenames");
                     request.addOption("--no-warnings");
+                    request.addOption("--no-check-certificates");
+                    request.addOption("--user-agent",
+                        "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+
+                    // إعدادات خاصة لكل موقع
+                    if (cleanUrl.contains("tiktok.com")) {
+                        // TikTok: extractor args جديدة
+                        request.addOption("--extractor-args",
+                            "tiktok:api_hostname=api22-normal-c-useast2a.tiktokv.com");
+                        request.addOption("--referer", "https://www.tiktok.com/");
+                    } else if (cleanUrl.contains("instagram.com")) {
+                        request.addOption("--referer", "https://www.instagram.com/");
+                    } else if (cleanUrl.contains("youtube.com") || cleanUrl.contains("youtu.be")) {
+                        request.addOption("--extractor-args",
+                            "youtube:player_client=android,web");
+                    }
 
                     if ("mp3".equals(format)) {
                         request.addOption("-x");
@@ -108,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     String msg = e.getMessage() == null ? "فشل التحميل" : e.getMessage();
                     msg = msg.replace("'", "").replace("\n", " ");
+                    if (msg.length() > 200) msg = msg.substring(0, 200);
                     callJs("window.onError('" + msg + "');");
                 }
             });
